@@ -14,19 +14,23 @@ import {
 const gridItems = [
   {
     title: 'Sales',
-    icon: 'https://img.icons8.com/ios-filled/50/e91e63/sales-performance.png',
+    icon: { uri: 'https://cdn.pixabay.com/photo/2015/10/31/12/41/sale-1015710_1280.jpg' },
+    iconSize: { width: 90, height: 90 },
   },
   {
     title: 'Menu',
-    icon: 'https://img.icons8.com/ios-filled/50/e91e63/restaurant-menu.png',
+    icon: { uri: 'https://www.pngkey.com/png/detail/38-381514_clip-free-stock-menu-supreme-logo-suprem-restaurant.png' },
+    iconSize: { width: 90, height: 90 },
   },
   {
     title: 'Cancelled Bills',
-    icon: 'https://img.icons8.com/ios-filled/50/e91e63/cancel.png',
+    icon: { uri: 'https://pnghq.com/wp-content/uploads/cancelled-stamp-free-png-images-350x268.png' },
+    iconSize: { width: 60, height: 60 },
   },
   {
     title: 'Data Summary',
-    icon: 'https://img.icons8.com/ios-filled/50/e91e63/combo-chart--v1.png',
+    icon: { uri: 'https://img.freepik.com/fotos-premium/grafico-negocios-colorido-grafico-circular-aislado_241146-863.jpg' },
+    iconSize: { width: 70, height: 70 },
   },
 ];
 
@@ -82,7 +86,16 @@ export default function DashboardScreen() {
                     onPress={() => handlePress(item.title)}
                     activeOpacity={0.8}
                   >
-                    <Image source={{ uri: item.icon }} style={styles.icon} />
+                    <Image 
+                      source={item.icon} 
+                      style={[
+                        styles.icon,
+                        item.iconSize && {
+                          width: item.iconSize.width,
+                          height: item.iconSize.height,
+                        }
+                      ]} 
+                    />
                     <Text style={styles.cardText}>{item.title}</Text>
                   </TouchableOpacity>
                 </View>
@@ -182,38 +195,36 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 20,
-    padding: 30,
+    padding: 39,
   },
   card: {
     width: cardSize,
-    height: cardSize +15,
+    height: cardSize + 10,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 1)', // Semi-transparent white background
+    backgroundColor: '#fffffffa', // Pure white background
     borderWidth: 2, 
-    borderColor: 'rgba(233, 42, 106, 0.3)', // More subtle border
+    borderColor: 'rgba(246, 3, 84, 1)',
     shadowColor: 'rgba(233, 42, 106, 0.4)',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 6,
-    // Additional glass-like properties
-    backdropFilter: 'blur(10px)', // Note: This may not work on all platforms
   },
   cardContent: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 10,
   },
   icon: {
-    width: 50,
-    height: 50,
+    width: 50, // Default size - will be overridden by individual iconSize
+    height: 50, // Default size - will be overridden by individual iconSize
     marginBottom: 15,
     opacity: 0.9,
   },
   cardText: {
     fontSize: 18,
-    color: '#be185d', 
+    color: '#000000', // Black text color
     fontWeight: '700',
     textAlign: 'center',
   },

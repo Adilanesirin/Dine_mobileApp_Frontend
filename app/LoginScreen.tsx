@@ -1,4 +1,3 @@
-// app/login.tsx
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -42,7 +41,7 @@ export default function LoginScreen() {
 
         {/* Top Card Section with Icon */}
         <View style={styles.topCard}>
-          <FontAwesome5 name="users" size={48} color="#fff" />
+          <FontAwesome5 name="users" size={70} color="#fff" />
           <Text style={styles.topCardText}>User Login</Text>
         </View>
 
@@ -157,7 +156,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   poweredByTextCard: {
-    paddingTop:20,
+    paddingTop:150,
   },
   poweredByText: {
     textAlign: 'center',

@@ -12,26 +12,129 @@ import {
   View
 } from 'react-native';
 
+// Option 1: Custom Icon Component using SVG-like styling
+const CustomIcon = ({ type, size = 50, color = '#e91e63' }) => {
+  const iconStyle = {
+    width: size,
+    height: size,
+    backgroundColor: color,
+    borderRadius: size / 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  };
+
+  const getIconContent = () => {
+    switch (type) {
+      case 'dine':
+        return (
+          <View style={iconStyle}>
+            <View style={{
+              width: size * 0.6,
+              height: size * 0.6,
+              borderRadius: size * 0.1,
+              backgroundColor: 'white',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              <Text style={{ color: color, fontSize: size * 0.3, fontWeight: 'bold' }}>🍽️</Text>
+            </View>
+          </View>
+        );
+      case 'starstay':
+        return (
+          <View style={iconStyle}>
+            <View style={{
+              width: size * 0.6,
+              height: size * 0.6,
+              borderRadius: size * 0.3,
+              backgroundColor: 'white',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              <Text style={{ color: color, fontSize: size * 0.3, fontWeight: 'bold' }}>⭐</Text>
+            </View>
+          </View>
+        );
+      case 'accounts':
+        return (
+          <View style={iconStyle}>
+            <View style={{
+              width: size * 0.6,
+              height: size * 0.6,
+              borderRadius: size * 0.1,
+              backgroundColor: 'white',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              <Text style={{ color: color, fontSize: size * 0.3, fontWeight: 'bold' }}>💰</Text>
+            </View>
+          </View>
+        );
+      case 'settings':
+        return (
+          <View style={iconStyle}>
+            <View style={{
+              width: size * 0.6,
+              height: size * 0.6,
+              borderRadius: size * 0.3,
+              backgroundColor: 'white',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              <Text style={{ color: color, fontSize: size * 0.3, fontWeight: 'bold' }}>⚙️</Text>
+            </View>
+          </View>
+        );
+      default:
+        return (
+          <View style={iconStyle}>
+            <View style={{
+              width: size * 0.6,
+              height: size * 0.6,
+              borderRadius: size * 0.1,
+              backgroundColor: 'white',
+            }} />
+          </View>
+        );
+    }
+  };
+
+  return getIconContent();
+};
+
+// Updated grid items with individual icon sizes
 const gridItems = [
   {
     title: 'Dine',
-    icon: 'https://img.icons8.com/ios-filled/50/e91e63/restaurant.png',
-    route: '/dashboard'
+    // Local asset for Dine (adjusted path from app folder)
+    icon: require('../assets/images/dine-logo.png'),
+    iconSize: { width: 70, height: 70 }, // Custom size for Dine icon
+    route: '/dashboard',
+    backgroundColor: '#FF6B6B', // Custom background color for each card
   },
   {
     title: 'Star Stay',
-    icon: 'https://img.icons8.com/ios-filled/50/e91e63/star.png',
-    route: '/starstay'
+    // External URL for Star Stay
+    icon: { uri: 'https://img.freepik.com/premium-psd/stars-3d-icon_465216-444.jpg' },
+    iconSize: { width: 70, height: 70 }, // Smaller size for Star Stay icon
+    route: '/starstay',
+    backgroundColor: '#4ECDC4',
   },
   {
     title: 'Accounts',
-    icon: 'https://img.icons8.com/ios-filled/50/e91e63/accounting.png',
-    route: '/accounts'
+    // External URL for Accounts
+    icon: { uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTt6QvciH_45HMQngs3nbzSq6RmrPDija3xQg5aLwP-wAfimzzSs-jM3morDF_oO2pdoUo&usqp=CAU' },
+    iconSize: { width: 60, height: 60 }, // Medium size for Accounts icon
+    route: '/accounts',
+    backgroundColor: '#45B7D1',
   },
   {
     title: 'Settings',
-    icon: 'https://img.icons8.com/ios-filled/50/e91e63/settings.png',
-    route: '/settings'
+    // External URL for Settings
+    icon: { uri: 'https://www.computerhope.com/jargon/s/settings-generic-gear.png' },
+    iconSize: { width: 60, height: 60 }, // Default size for Settings icon
+    route: '/settings',
+    backgroundColor: '#96CEB4',
   },
 ];
 
@@ -45,8 +148,6 @@ export default function MainHomeScreen() {
     if (item.title === 'Dine') {
       router.push('/dashboard');
     } else {
-      // For other items, you can navigate to their respective pages
-      // router.push(item.route);
       console.log(`Navigate to ${item.route}`);
     }
   };
@@ -57,7 +158,7 @@ export default function MainHomeScreen() {
 
   const handleLogout = () => {
     setShowProfileCard(false);
-    router.replace('/LoginScreen'); // Navigate to login screen
+    router.replace('/LoginScreen');
   };
 
   const closeProfileCard = () => {
@@ -107,8 +208,20 @@ export default function MainHomeScreen() {
                     onPress={() => handlePress(item)}
                     activeOpacity={0.8}
                   >
-                    <Image source={{ uri: item.icon }} style={styles.icon} />
-                    <Text style={styles.cardText}>{item.title}</Text>
+                    {/* Render icons with individual sizes */}
+                    <Image 
+                      source={item.icon} 
+                      style={[
+                        styles.icon,
+                        item.iconSize && {
+                          width: item.iconSize.width,
+                          height: item.iconSize.height,
+                        }
+                      ]} 
+                    />
+                    <Text style={styles.cardText}>
+                      {item.title}
+                    </Text>
                   </TouchableOpacity>
                 </View>
               ))}
@@ -145,7 +258,6 @@ export default function MainHomeScreen() {
                     style={styles.profileCardIcon} 
                   />
                   <Text style={styles.profileCardTitle}>Hello User!</Text>
-                  <Text style={styles.profileCardSubtitle}>Welcome back to the app</Text>
                 </View>
                 
                 <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
@@ -165,7 +277,7 @@ export default function MainHomeScreen() {
 }
 
 const screenWidth = Dimensions.get('window').width;
-const cardSize = (screenWidth - 140) / 2; // Adjusted for glass container padding
+const cardSize = (screenWidth - 140) / 2;
 
 const styles = StyleSheet.create({
   container: {
@@ -225,19 +337,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     opacity: 0.8,
   },
-  // Glass effect container styles
   glassContainer: {
     flex: 1,
     marginHorizontal: 20,
     marginBottom: 150,
     borderRadius: 25,
     overflow: 'hidden',
-    // iOS shadow
     shadowColor: 'rgba(255, 255, 255, 0.3)',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 15,
-    // Android shadow
     elevation: 10,
   },
   glassBackground: {
@@ -245,7 +354,6 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
-    // Additional glass effect styling
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   grid: {
@@ -259,18 +367,16 @@ const styles = StyleSheet.create({
   },
   card: {
     width: cardSize,
-    height: cardSize +10,
+    height: cardSize + 10,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)', // Semi-transparent white background
+    backgroundColor: '#fffffffa', // Pure white background
     borderWidth: 2, 
-    borderColor: 'rgba(233, 42, 106, 0.3)', // More subtle border
+    borderColor: 'rgba(246, 3, 84, 1)',
     shadowColor: 'rgba(233, 42, 106, 0.4)',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 6,
-    // Additional glass-like properties
-    backdropFilter: 'blur(10px)', // Note: This may not work on all platforms
   },
   cardContent: {
     flex: 1,
@@ -279,14 +385,14 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   icon: {
-    width: 50,
-    height: 50,
+    width: 50, // Default size - will be overridden by individual iconSize
+    height: 50, // Default size - will be overridden by individual iconSize
     marginBottom: 15,
     opacity: 0.9,
   },
   cardText: {
     fontSize: 18,
-    color: '#be185d', 
+    color: '#000000', // Black text color
     fontWeight: '700',
     textAlign: 'center',
   },
@@ -340,12 +446,6 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
-  },
-  profileCardSubtitle: {
-    fontSize: 16,
-    color: '#802f5bff',
-    textAlign: 'center',
-    opacity: 0.9,
   },
   logoutButton: {
     flexDirection: 'row',
