@@ -1,7 +1,9 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useRouter } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 import React, { useState } from 'react';
 import {
+  ActivityIndicator,
   Dimensions,
   KeyboardAvoidingView,
   Platform,
@@ -20,25 +22,123 @@ export default function LoginScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (username.trim() === '' || password.trim() === '') {
       setError('Please enter both username and password');
-    } else {
-      setError('');
-      router.replace('/MainHomeScreen');
+      return;
     }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      console.log('Attempting login with:', { id: username.trim(), pass_field: password.trim() });
+      
+      const response = await fetch('https://dinewebappapi.sysmac.in/api/users/', {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        }
+      });
+
+      console.log('Response status:', response.status);
+
+      // Get response text first to see what we're actually receiving
+      const responseText = await response.text();
+      console.log('Raw response:', responseText);
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+        console.log('Parsed response data:', data);
+      } catch (parseError) {
+        console.log('Failed to parse JSON, response is not JSON:', parseError);
+        setError(`Server returned invalid response: ${responseText.substring(0, 100)}`);
+        return;
+      }
+
+      if (response.ok) {
+        // API returns array of all users, we need to find matching credentials
+        if (Array.isArray(data)) {
+          const matchingUser = data.find(user => 
+            user.id === username.trim() && user.pass_field === password.trim()
+          );
+          
+          if (matchingUser) {
+            // Save user data to SecureStore
+            try {
+              await SecureStore.setItemAsync('userToken', JSON.stringify({
+                id: matchingUser.id,
+                loginTime: new Date().toISOString()
+              }));
+              
+              console.log('Login successful for user:', matchingUser.id);
+              
+              // Navigate with a small delay to ensure state is updated
+              setTimeout(() => {
+                router.replace('/MainHomeScreen');
+              }, 100);
+              
+            } catch (storeError) {
+              console.error('Error saving to SecureStore:', storeError);
+              // Still allow login even if storage fails
+              router.replace('/MainHomeScreen');
+            }
+          } else {
+            // Check if username exists but password is wrong
+            const userExists = data.find(user => user.id === username.trim());
+            if (userExists) {
+              setError('Incorrect password. Please try again.');
+            } else {
+              setError('Username not found. Please check your credentials.');
+            }
+          }
+        } else {
+          console.log('Unexpected response format - not an array:', data);
+          setError('Server returned unexpected data format');
+        }
+      } else {
+        // Handle different HTTP status codes
+        const errorMessage = data?.message || data?.error || `HTTP ${response.status}`;
+        
+        if (response.status === 401 || response.status === 403) {
+          setError(`Invalid username or password (${errorMessage})`);
+        } else if (response.status === 404) {
+          setError(`User not found (${errorMessage})`);
+        } else if (response.status === 500) {
+          setError(`Server error (${errorMessage})`);
+        } else {
+          setError(`Login failed: ${errorMessage}`);
+        }
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      if (error.message.includes('Network request failed') || error.message.includes('fetch')) {
+        setError('Network error. Please check your internet connection.');
+      } else if (error.message.includes('timeout')) {
+        setError('Request timeout. Please try again.');
+      } else {
+        setError(`Connection error: ${error.message}`);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   return (
     <KeyboardAvoidingView
        style={styles.container}
-       behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // now works for Android too
-       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20} // optional, adjust for headers
+       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
-
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-
         {/* Top Card Section with Icon */}
         <View style={styles.topCard}>
           <FontAwesome5 name="users" size={70} color="#fff" />
@@ -55,32 +155,59 @@ export default function LoginScreen() {
             value={username}
             onChangeText={setUsername}
             placeholderTextColor="#888"
+            editable={!isLoading}
+            autoCapitalize="none"
+            autoCorrect={false}
           />
 
-          <TextInput
-            placeholder="Password"
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            placeholderTextColor="#888"
-          />
+          <View style={styles.passwordContainer}>
+            <TextInput
+              placeholder="Password"
+              style={styles.passwordInput}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              placeholderTextColor="#888"
+              editable={!isLoading}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            <TouchableOpacity
+              style={styles.eyeIcon}
+              onPress={togglePasswordVisibility}
+              disabled={isLoading}
+            >
+              <FontAwesome5 
+                name={showPassword ? "eye-slash" : "eye"} 
+                size={20} 
+                color="#888" 
+              />
+            </TouchableOpacity>
+          </View>
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-          <TouchableOpacity style={styles.button} onPress={handleLogin}>
-            <Text style={styles.buttonText}>Login</Text>
+          <TouchableOpacity 
+            style={[styles.button, isLoading && styles.buttonDisabled]} 
+            onPress={handleLogin}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color="#fff" />
+                <Text style={styles.buttonText}>Logging in...</Text>
+              </View>
+            ) : (
+              <Text style={styles.buttonText}>Login</Text>
+            )}
           </TouchableOpacity>
 
           <View style={styles.poweredByTextCard}>
-            {/* Footer Text */}
-        <Text style={styles.poweredByText}>
-          Powered by IMC Business Solutions
-        </Text>
+            <Text style={styles.poweredByText}>
+              Powered by IMC Business Solutions
+            </Text>
           </View>
         </View>
-
-       
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -89,11 +216,10 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f2f6ff',
+    backgroundColor: '#f2f6ffff',
   },
   scrollContainer: {
     flexGrow: 1,
-    
   },
   topCard: {
     backgroundColor: '#8c103cff',
@@ -138,6 +264,23 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     fontSize: 16,
   },
+  passwordContainer: {
+    position: 'relative',
+    marginBottom: 16,
+  },
+  passwordInput: {
+    backgroundColor: '#f2ebebff',
+    borderRadius: 10,
+    padding: 18,
+    paddingRight: 50,
+    fontSize: 16,
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 15,
+    top: 18,
+    padding: 5,
+  },
   errorText: {
     color: 'red',
     marginBottom: 12,
@@ -150,13 +293,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10,
   },
+  buttonDisabled: {
+    backgroundColor: '#cccccc',
+  },
   buttonText: {
     color: '#fff',
     fontSize: 20,
     fontWeight: '800',
   },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
   poweredByTextCard: {
-    paddingTop:150,
+    paddingTop: 150,
   },
   poweredByText: {
     textAlign: 'center',

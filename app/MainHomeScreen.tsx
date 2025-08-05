@@ -1,6 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import * as SecureStore from 'expo-secure-store';
+import React, { useEffect, useState } from 'react';
 import {
   Dimensions,
   Image,
@@ -11,96 +12,6 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-
-// Option 1: Custom Icon Component using SVG-like styling
-const CustomIcon = ({ type, size = 50, color = '#e91e63' }) => {
-  const iconStyle = {
-    width: size,
-    height: size,
-    backgroundColor: color,
-    borderRadius: size / 4,
-    justifyContent: 'center',
-    alignItems: 'center',
-  };
-
-  const getIconContent = () => {
-    switch (type) {
-      case 'dine':
-        return (
-          <View style={iconStyle}>
-            <View style={{
-              width: size * 0.6,
-              height: size * 0.6,
-              borderRadius: size * 0.1,
-              backgroundColor: 'white',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-              <Text style={{ color: color, fontSize: size * 0.3, fontWeight: 'bold' }}>🍽️</Text>
-            </View>
-          </View>
-        );
-      case 'starstay':
-        return (
-          <View style={iconStyle}>
-            <View style={{
-              width: size * 0.6,
-              height: size * 0.6,
-              borderRadius: size * 0.3,
-              backgroundColor: 'white',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-              <Text style={{ color: color, fontSize: size * 0.3, fontWeight: 'bold' }}>⭐</Text>
-            </View>
-          </View>
-        );
-      case 'accounts':
-        return (
-          <View style={iconStyle}>
-            <View style={{
-              width: size * 0.6,
-              height: size * 0.6,
-              borderRadius: size * 0.1,
-              backgroundColor: 'white',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-              <Text style={{ color: color, fontSize: size * 0.3, fontWeight: 'bold' }}>💰</Text>
-            </View>
-          </View>
-        );
-      case 'settings':
-        return (
-          <View style={iconStyle}>
-            <View style={{
-              width: size * 0.6,
-              height: size * 0.6,
-              borderRadius: size * 0.3,
-              backgroundColor: 'white',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-              <Text style={{ color: color, fontSize: size * 0.3, fontWeight: 'bold' }}>⚙️</Text>
-            </View>
-          </View>
-        );
-      default:
-        return (
-          <View style={iconStyle}>
-            <View style={{
-              width: size * 0.6,
-              height: size * 0.6,
-              borderRadius: size * 0.1,
-              backgroundColor: 'white',
-            }} />
-          </View>
-        );
-    }
-  };
-
-  return getIconContent();
-};
 
 // Updated grid items with individual icon sizes
 const gridItems = [
@@ -141,6 +52,32 @@ const gridItems = [
 export default function MainHomeScreen() {
   const router = useRouter();
   const [showProfileCard, setShowProfileCard] = useState(false);
+  const [userName, setUserName] = useState('User');
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load user data when component mounts
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  const loadUserData = async () => {
+    try {
+      const userToken = await SecureStore.getItemAsync('userToken');
+      if (userToken) {
+        const userData = JSON.parse(userToken);
+        setUserName(userData.id || 'User');
+        console.log('Loaded user data:', userData);
+      } else {
+        // No user token found, redirect to login
+        router.replace('/LoginScreen');
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+      setUserName('User');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handlePress = (item) => {
     console.log(`${item.title} pressed`);
@@ -156,7 +93,15 @@ export default function MainHomeScreen() {
     setShowProfileCard(true);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      // Clear user data from SecureStore
+      await SecureStore.deleteItemAsync('userToken');
+      console.log('User logged out successfully');
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+    
     setShowProfileCard(false);
     router.replace('/LoginScreen');
   };
@@ -164,6 +109,18 @@ export default function MainHomeScreen() {
   const closeProfileCard = () => {
     setShowProfileCard(false);
   };
+
+  // Show loading or redirect if no user data
+  if (isLoading) {
+    return (
+      <LinearGradient
+        colors={['#8c103cff', '#8c103cff', '#8c103cff']}
+        style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}
+      >
+        <Text style={styles.header}>Loading...</Text>
+      </LinearGradient>
+    );
+  }
 
   return (
     <>
@@ -188,7 +145,7 @@ export default function MainHomeScreen() {
         </View>
 
         <View style={styles.headerContainer}>
-          <Text style={styles.header}>Welcome</Text>
+          <Text style={styles.header}>Welcome {userName}</Text>
           <Text style={styles.subHeader}>Choose a service to continue</Text>
         </View>
 
@@ -257,7 +214,8 @@ export default function MainHomeScreen() {
                     source={{ uri: 'https://img.icons8.com/ios-filled/80/ffffff/user-male-circle.png' }} 
                     style={styles.profileCardIcon} 
                   />
-                  <Text style={styles.profileCardTitle}>Hello User!</Text>
+                  <Text style={styles.profileCardTitle}>Hello {userName}!</Text>
+                  <Text style={styles.profileCardSubtitle}>Welcome back to the system</Text>
                 </View>
                 
                 <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
@@ -446,6 +404,12 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
+  },
+  profileCardSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    opacity: 0.8,
   },
   logoutButton: {
     flexDirection: 'row',
