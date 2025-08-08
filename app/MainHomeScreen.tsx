@@ -26,7 +26,7 @@ const gridItems = [
   {
     title: 'Star Stay',
     // External URL for Star Stay
-    icon: { uri: 'https://img.freepik.com/premium-psd/stars-3d-icon_465216-444.jpg' },
+    icon: require('../assets/images/starstay.png'),
     iconSize: { width: 70, height: 70 }, // Smaller size for Star Stay icon
     route: '/starstay',
     backgroundColor: '#4ECDC4',

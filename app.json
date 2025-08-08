@@ -8,6 +8,12 @@
     "scheme": "dinemobileapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/dine-logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff",
+      "assets": ["./assets/fonts/"]
+    },
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
@@ -47,7 +53,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/dine-logo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
