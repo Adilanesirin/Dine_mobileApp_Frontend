@@ -20,7 +20,7 @@ const gridItems = [
   {
     title: 'Menu',
     icon: { uri: 'https://www.pngkey.com/png/detail/38-381514_clip-free-stock-menu-supreme-logo-suprem-restaurant.png' },
-    iconSize: { width: 90, height: 90 },
+    iconSize: { width: 100, height: 96 },
   },
   {
     title: 'Cancelled Bills',
@@ -38,7 +38,11 @@ export default function DashboardScreen() {
   const router = useRouter();
 
   const handlePress = (title) => {
+    if(title==='Sales') {
+      router.push('/summary');
+    }else{
     console.log(`${title} pressed`);
+    }
   };
 
   const handleBackPress = () => {
@@ -129,13 +133,7 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 20,
   },
-  backButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 25,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.25)',
-  },
+  
   backIcon: {
     width: 32,
     height: 32,
