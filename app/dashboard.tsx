@@ -14,18 +14,18 @@ import {
 const gridItems = [
   {
     title: 'Sales',
-    icon: { uri: 'https://cdn.pixabay.com/photo/2015/10/31/12/41/sale-1015710_1280.jpg' },
+    icon: require('../assets/images/sales.jpg'),
     iconSize: { width: 90, height: 90 },
   },
   {
     title: 'Menu',
-    icon: { uri: 'https://www.pngkey.com/png/detail/38-381514_clip-free-stock-menu-supreme-logo-suprem-restaurant.png' },
+    icon: require('../assets/images/menu.png'),
     iconSize: { width: 100, height: 96 },
   },
   {
     title: 'Cancelled Bills',
-    icon: { uri: 'https://pnghq.com/wp-content/uploads/cancelled-stamp-free-png-images-350x268.png' },
-    iconSize: { width: 60, height: 60 },
+    icon: require('../assets/images/cancel.jpg'),
+    iconSize: { width: 80, height: 79 },
   },
   {
     title: 'Data Summary',

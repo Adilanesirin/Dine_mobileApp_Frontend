@@ -15,6 +15,7 @@ import {
   View
 } from 'react-native';
 
+
 const { height } = Dimensions.get('window');
 
 export default function LoginScreen() {
@@ -39,14 +40,11 @@ export default function LoginScreen() {
       
       const response = await fetch('https://dinewebappapi.sysmac.in/api/users/', {
         method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        }
+        headers: { 'Accept': 'application/json' }
       });
 
       console.log('Response status:', response.status);
 
-      // Get response text first to see what we're actually receiving
       const responseText = await response.text();
       console.log('Raw response:', responseText);
 
@@ -55,40 +53,30 @@ export default function LoginScreen() {
         data = JSON.parse(responseText);
         console.log('Parsed response data:', data);
       } catch (parseError) {
-        console.log('Failed to parse JSON, response is not JSON:', parseError);
+        console.log('Failed to parse JSON:', parseError);
         setError(`Server returned invalid response: ${responseText.substring(0, 100)}`);
         return;
       }
 
       if (response.ok) {
-        // API returns array of all users, we need to find matching credentials
         if (Array.isArray(data)) {
           const matchingUser = data.find(user => 
             user.id === username.trim() && user.pass_field === password.trim()
           );
           
           if (matchingUser) {
-            // Save user data to SecureStore
             try {
               await SecureStore.setItemAsync('userToken', JSON.stringify({
                 id: matchingUser.id,
                 loginTime: new Date().toISOString()
               }));
-              
               console.log('Login successful for user:', matchingUser.id);
-              
-              // Navigate with a small delay to ensure state is updated
-              setTimeout(() => {
-                router.replace('/MainHomeScreen');
-              }, 100);
-              
+              setTimeout(() => router.replace('/MainHomeScreen'), 100);
             } catch (storeError) {
               console.error('Error saving to SecureStore:', storeError);
-              // Still allow login even if storage fails
               router.replace('/MainHomeScreen');
             }
           } else {
-            // Check if username exists but password is wrong
             const userExists = data.find(user => user.id === username.trim());
             if (userExists) {
               setError('Incorrect password. Please try again.');
@@ -97,13 +85,10 @@ export default function LoginScreen() {
             }
           }
         } else {
-          console.log('Unexpected response format - not an array:', data);
           setError('Server returned unexpected data format');
         }
       } else {
-        // Handle different HTTP status codes
         const errorMessage = data?.message || data?.error || `HTTP ${response.status}`;
-        
         if (response.status === 401 || response.status === 403) {
           setError(`Invalid username or password (${errorMessage})`);
         } else if (response.status === 404) {
@@ -128,9 +113,7 @@ export default function LoginScreen() {
     }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
   return (
     <KeyboardAvoidingView
@@ -139,31 +122,38 @@ export default function LoginScreen() {
        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* Top Card Section with Icon */}
+        
+        {/* Top Card Section */}
         <View style={styles.topCard}>
           <FontAwesome5 name="users" size={70} color="#fff" />
           <Text style={styles.topCardText}>User Login</Text>
         </View>
 
-        {/* Login Form Card */}
+        {/* Login Form */}
         <View style={styles.card}>
           <Text style={styles.title}>Welcome Back</Text>
 
-          <TextInput
-            placeholder="Username"
-            style={styles.input}
-            value={username}
-            onChangeText={setUsername}
-            placeholderTextColor="#888"
-            editable={!isLoading}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
+          {/* Username with Icon */}
+          <View style={styles.inputContainer}>
+            <FontAwesome5 name="user" size={18} color="#888" style={styles.inputIcon} />
+            <TextInput
+              placeholder="Username"
+              style={styles.inputField}
+              value={username}
+              onChangeText={setUsername}
+              placeholderTextColor="#888"
+              editable={!isLoading}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+          </View>
 
-          <View style={styles.passwordContainer}>
+          {/* Password with Icon */}
+          <View style={styles.inputContainer}>
+            <FontAwesome5 name="lock" size={18} color="#888" style={styles.inputIcon} />
             <TextInput
               placeholder="Password"
-              style={styles.passwordInput}
+              style={styles.inputField}
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
@@ -179,7 +169,7 @@ export default function LoginScreen() {
             >
               <FontAwesome5 
                 name={showPassword ? "eye-slash" : "eye"} 
-                size={20} 
+                size={18} 
                 color="#888" 
               />
             </TouchableOpacity>
@@ -214,13 +204,8 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f2f6ffff',
-  },
-  scrollContainer: {
-    flexGrow: 1,
-  },
+  container: { flex: 1, backgroundColor: '#f2f6ffff' },
+  scrollContainer: { flexGrow: 1 },
   topCard: {
     backgroundColor: '#8c103cff',
     height: height * 0.4,
@@ -230,12 +215,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 20,
     paddingTop: 60,
   },
-  topCardText: {
-    color: '#fff',
-    fontSize: 20,
-    marginTop: 10,
-    fontWeight: '600',
-  },
+  topCardText: { color: '#fff', fontSize: 20, marginTop: 10, fontWeight: '600' },
   card: {
     backgroundColor: '#fff',
     marginTop: -40,
@@ -257,35 +237,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#333',
   },
-  input: {
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#f2ebebff',
     borderRadius: 10,
-    padding: 18,
-    marginBottom: 16,
-    fontSize: 16,
-  },
-  passwordContainer: {
-    position: 'relative',
+    paddingHorizontal: 12,
     marginBottom: 16,
   },
-  passwordInput: {
-    backgroundColor: '#f2ebebff',
-    borderRadius: 10,
-    padding: 18,
-    paddingRight: 50,
-    fontSize: 16,
-  },
-  eyeIcon: {
-    position: 'absolute',
-    right: 15,
-    top: 18,
-    padding: 5,
-  },
-  errorText: {
-    color: 'red',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
+  inputIcon: { marginRight: 10 },
+  inputField: { flex: 1, fontSize: 16, paddingVertical: 14 },
+  eyeIcon: { padding: 5 },
+  errorText: { color: 'red', marginBottom: 12, textAlign: 'center' },
   button: {
     backgroundColor: '#8c103cff',
     paddingVertical: 16,
@@ -293,22 +256,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10,
   },
-  buttonDisabled: {
-    backgroundColor: '#cccccc',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: '800',
-  },
-  loadingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  poweredByTextCard: {
-    paddingTop: 150,
-  },
+  buttonDisabled: { backgroundColor: '#cccccc' },
+  buttonText: { color: '#fff', fontSize: 20, fontWeight: '800' },
+  loadingContainer: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  poweredByTextCard: { paddingTop: 150 },
   poweredByText: {
     textAlign: 'center',
     marginVertical: 20,
