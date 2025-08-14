@@ -38,10 +38,15 @@ export default function DashboardScreen() {
   const router = useRouter();
 
   const handlePress = (title) => {
-    if(title==='Sales') {
+    if(title === 'Sales') {
       router.push('/summary');
-    }else{
-    console.log(`${title} pressed`);
+    } else if(title === 'Menu') {
+      router.push('/menuscreen'); // Navigate to menuscreen.tsx
+    } else {
+      console.log(`${title} pressed`);
+      // Add other navigation routes as needed
+      // router.push('/cancelled-bills');
+      // router.push('/data-summary');
     }
   };
 

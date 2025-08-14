@@ -201,7 +201,7 @@ export default function LoginScreen() {
       </ScrollView>
     </KeyboardAvoidingView>
   );
-}
+}  
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f2f6ffff' },
