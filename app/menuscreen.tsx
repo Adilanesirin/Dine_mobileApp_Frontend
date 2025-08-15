@@ -2,19 +2,19 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Dimensions,
-    FlatList,
-    Image,
-    RefreshControl,
-    SafeAreaView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  FlatList,
+  Image,
+  RefreshControl,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 const API_URL = 'https://dinewebappapi.sysmac.in/api/items/';
@@ -174,12 +174,15 @@ export default function MenuScreen() {
                   </Text>
                 </View>
               </View>
-              {item.kitchen && (
-                <View style={styles.kitchenContainer}>
-                  <Text style={styles.kitchenLabel}>Kitchen: </Text>
-                  <Text style={styles.kitchenText}>{item.kitchen}</Text>
-                </View>
-              )}
+              <View style={styles.kitchenContainer}>
+                <Text style={styles.kitchenLabel}>Kitchen: </Text>
+                <Text style={[
+                  styles.kitchenText,
+                  !item.kitchen && styles.nullValueText
+                ]}>
+                  {item.kitchen || 'null'}
+                </Text>
+              </View>
             </View>
             
             <View style={styles.priceSection}>
@@ -266,12 +269,15 @@ export default function MenuScreen() {
                   <Text style={styles.infoLabel}>Category:</Text>
                   <Text style={styles.infoValue}>{item.category || 'General'}</Text>
                 </View>
-                {item.kitchen && (
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Kitchen:</Text>
-                    <Text style={styles.infoValue}>{item.kitchen}</Text>
-                  </View>
-                )}
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>Kitchen:</Text>
+                  <Text style={[
+                    styles.infoValue,
+                    !item.kitchen && styles.nullValueText
+                  ]}>
+                    {item.kitchen || 'null'}
+                  </Text>
+                </View>
                 <View style={styles.infoRow}>
                   <Text style={styles.infoLabel}>Item Code:</Text>
                   <Text style={styles.infoValue}>#{item.item_code}</Text>
@@ -612,6 +618,10 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#8c103cff',
     fontWeight: '600',
+  },
+  nullValueText: {
+    fontStyle: 'italic',
+    color: '#999',
   },
   priceSection: {
     alignItems: 'flex-end',
